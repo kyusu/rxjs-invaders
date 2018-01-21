@@ -1,3 +1,7 @@
+/**
+ * @param {CanvasRenderingContext2D} ctx
+ * @return {function(number,number, number, string, string): void}
+ */
 const getDrawTriangle = ctx => (x, y, width, color, direction) => {
     ctx.fillStyle = color;
     ctx.beginPath();

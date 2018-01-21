@@ -1,6 +1,9 @@
 import Rx
     from 'rxjs/Rx';
-import {forEach} from 'ramda';
+import {
+    forEach,
+    both
+} from 'ramda';
 import getDrawTriangle
     from './getDrawTriangle';
 
@@ -12,6 +15,7 @@ const drawTriangle = getDrawTriangle(ctx);
  * @typedef {Object} EnemyShotCoordinates
  * @property {number} x
  * @property {number} y
+ * @implements ICoordinates
  */
 
 /**
@@ -23,6 +27,8 @@ const drawTriangle = getDrawTriangle(ctx);
  * @property {number} x
  * @property {number} y
  * @property {EnemyShots} shots
+ * @property {Boolean} isDead
+ * @implements ICoordinates
  */
 
 /**
@@ -40,7 +46,8 @@ const getRandomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) +
 const getEnemy = () => ({
     x: parseInt(Math.random() * canvas.width),
     y: -30,
-    shots: []
+    shots: [],
+    isDead: false
 });
 
 /**
@@ -57,13 +64,27 @@ const enemyShots$ = Rx.Observable
  * @param {Enemy} enemy
  */
 const addShots = enemy => () => {
-    const {x, y} = enemy;
-    enemy.shots.push({
-        x,
-        y
-    });
+    const {x, y, isDead} = enemy;
+    if (!isDead) {
+        enemy.shots.push({
+            x,
+            y
+        });
+    }
     enemy.shots = enemy.shots.filter(isVisible);
 };
+
+/**
+ * @param {boolean} isDead
+ * @param {EnemyShots} shots
+ * @return {boolean}
+ */
+const isStillInGame = ({isDead, shots}) => !(isDead && shots.length === 0);
+
+/**
+ * @type {function(Enemy): boolean}
+ */
+const keepEnemy = both(isVisible, isStillInGame);
 
 /**
  * @param {Enemies} enemies
@@ -73,7 +94,8 @@ const scanEnemies = enemies => {
     const enemy = getEnemy();
     enemyShots$.subscribe(addShots(enemy));
     enemies.push(enemy);
-    return enemies;
+    return enemies
+        .filter(keepEnemy)
 };
 
 /**
@@ -92,7 +114,9 @@ const paintEnemy = enemy => {
     enemy.y += 5;
     enemy.x += getRandomInt(-15, 15);
     const {x, y} = enemy;
-    drawTriangle(x, y, 20, '#00ff00', 'down');
+    if (!enemy.isDead) {
+        drawTriangle(x, y, 20, '#00ff00', 'down');
+    }
     enemy.shots.forEach(paintEnemyShot);
 };
 

@@ -10,12 +10,14 @@ import getDrawTriangle
  * @typedef {Object} HeroCoordinates
  * @property {number} x
  * @property {number} y
+ * @implements ICoordinates
  */
 
 /**
  * @typedef {Object} HeroShotCoordinates
  * @property {number} x
  * @property {number} y
+ * @implements ICoordinates
  */
 
 /**

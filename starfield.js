@@ -3,6 +3,8 @@ import Rx
 import {partial} from 'ramda';
 
 const canvas = document.getElementsByTagName('canvas')[0];
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 const ctx = canvas.getContext('2d');
 
 const SPEED = 200;
@@ -13,6 +15,7 @@ const STAR_NUMBER = 250;
  * @property {number} y
  * @property {number} x
  * @property {number} size
+ * @implements ICoordinates
  */
 
 /**
