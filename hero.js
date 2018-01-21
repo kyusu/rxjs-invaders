@@ -1,5 +1,8 @@
 import Rx
     from 'rxjs/Rx';
+import {
+    forEach
+} from 'ramda';
 import getDrawTriangle
     from './getDrawTriangle';
 
@@ -7,6 +10,16 @@ import getDrawTriangle
  * @typedef {Object} HeroCoordinates
  * @property {number} x
  * @property {number} y
+ */
+
+/**
+ * @typedef {Object} HeroShotCoordinates
+ * @property {number} x
+ * @property {number} y
+ */
+
+/**
+ * @typedef {Array.<HeroShotCoordinates>} HeroShots
  */
 
 /**
@@ -35,7 +48,52 @@ const hero$ = mouseMove$.map(getNewHeroCoordinates).startWith(startCoordinates);
 
 const paintHero = ({x, y}) => drawTriangle(x, y, 20, '#ff0000', 'up');
 
+const firing$ = Rx.Observable
+    .fromEvent(canvas, 'click')
+    .startWith({})
+    .sampleTime(200)
+    .timestamp();
+
+/**
+ * @param {HeroShots} shots
+ * @param {number} x
+ * @return {HeroShots}
+ */
+const scanShots = (shots, {x}) => {
+    shots.push({
+        x,
+        y: HERO_Y
+    });
+    return shots;
+};
+
+const getShotWithTimeStamp = ({timestamp}, {x}) => ({
+    timestamp,
+    x
+});
+
+const heroShots$ = Rx.Observable
+    .combineLatest([firing$, hero$], getShotWithTimeStamp)
+    .distinctUntilKeyChanged('timestamp')
+    .scan(scanShots, []);
+
+/**
+ * @param {HeroShotCoordinates} shot
+ */
+const paintHeroShot = shot => {
+    shot.y -= 15;
+    const {x, y} = shot;
+    drawTriangle(x, y, 5, '#ffff00', 'up');
+};
+
+/**
+ * @typedef {function(HeroShots): undefined}
+ */
+const paintHeroShots = forEach(paintHeroShot);
+
 export {
     paintHero,
-    hero$
+    paintHeroShots,
+    hero$,
+    heroShots$
 };
