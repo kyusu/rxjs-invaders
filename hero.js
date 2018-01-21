@@ -1,5 +1,7 @@
 import Rx
     from 'rxjs/Rx';
+import getDrawTriangle
+    from './getDrawTriangle';
 
 /**
  * @typedef {Object} HeroCoordinates
@@ -19,6 +21,8 @@ const getNewHeroCoordinates = ({clientX}) => ({
 const canvas = document.getElementsByTagName('canvas')[0];
 const ctx = canvas.getContext('2d');
 
+const drawTriangle = getDrawTriangle(ctx);
+
 const HERO_Y = canvas.height - 30;
 const mouseMove$ = Rx.Observable.fromEvent(canvas, 'mousemove');
 
@@ -28,16 +32,6 @@ const startCoordinates = {
 };
 
 const hero$ = mouseMove$.map(getNewHeroCoordinates).startWith(startCoordinates);
-
-const drawTriangle = (x, y, width, color, direction) => {
-    ctx.fillStyle = color;
-    ctx.beginPath();
-    ctx.moveTo(x - width, y);
-    ctx.lineTo(x, direction === 'up' ? y - width : y + width);
-    ctx.lineTo(x + width, y);
-    ctx.lineTo(x - width, y);
-    ctx.fill();
-};
 
 const paintHero = ({x, y}) => drawTriangle(x, y, 20, '#ff0000', 'up');
 
